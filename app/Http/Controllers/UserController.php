@@ -24,7 +24,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        //
+        return view('user.create');
     }
 
     /**
@@ -35,7 +35,15 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $this->validate($request, [
+            'name' => 'required|min:3|max:13',
+            'email' => 'required|email|unique:users|max:255',
+            'password' => 'required|min:6|max:13|confirmed',
+        ]);
+        $data['password'] = bcrypt($data['password']);
+        $user = User::create($data);
+        session()->flash('success', '欢迎，您将在这里开启一段新的旅程~');
+        return redirect()->route('user.show', [$user]);
     }
 
     /**
@@ -46,7 +54,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        //
+        return view('user.show', compact('user'));
     }
 
     /**
