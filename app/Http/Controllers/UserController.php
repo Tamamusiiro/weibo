@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\RegMail;
 use App\User;
 use Auth;
 use Illuminate\Http\Request;
+use Mail;
 
 class UserController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth', [
-            'except' => ['create', 'store', 'show', 'index']
+            'except' => ['create', 'store', 'show', 'index', 'confirmEmail']
         ]);
         $this->middleware('guest', [
             'only' => ['create', 'store']
@@ -49,13 +51,13 @@ class UserController extends Controller
         $data = $this->validate($request, [
             'name' => 'required|min:3|max:13',
             'email' => 'required|email|unique:users|max:255',
-            'password' => 'required|min:6|max:13|confirmed',
+            'password' => 'required|min:8|max:16|confirmed',
         ]);
         $data['password'] = bcrypt($data['password']);
         $user = User::create($data);
-        Auth::login($user);
-        session()->flash('success', '欢迎，您将在这里开启一段新的旅程~');
-        return redirect()->route('user.show', $user);
+        Mail::to($user)->send(new RegMail($user));
+        session()->flash('success', '验证邮件已发送到你的注册邮箱上，请注意查收。');
+        return redirect()->route('home');
     }
 
     /**
@@ -93,7 +95,7 @@ class UserController extends Controller
         $this->authorize('update', $user);
         $this->validate($request, [
             'name' => 'required|min:3|max:13',
-            'password' => 'nullable|min:3|max:13|confirmed'
+            'password' => 'nullable|min:8|max:16|confirmed'
         ]);
         $user->name = $request->name;
         if ($request->password) {
@@ -117,5 +119,18 @@ class UserController extends Controller
         $user->delete();
         session()->flash('success', '删除成功');
         return back();
+    }
+
+    public function confirmEmail($token)
+    {
+        $user = User::where('activation_token', $token)->firstOrFail();
+
+        $user->activated = true;
+        $user->activation_token = null;
+        $user->save();
+
+        Auth::login($user);
+        session()->flash('success', '恭喜你，激活成功！');
+        return redirect()->route('user.show', $user);
     }
 }

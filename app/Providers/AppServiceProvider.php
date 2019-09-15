@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\ObServer\UserObServer;
+use App\User;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -25,6 +27,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        User::observe(UserObServer::class);
     }
 }

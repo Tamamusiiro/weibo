@@ -16,7 +16,7 @@ class SessionController extends Controller
     {
         $data = $this->validate($request, [
             'email' => 'required|email|max:255',
-            'password' => 'required|min:3|max:13'
+            'password' => 'required|min:8|max:16'
         ]);
         if (Auth::attempt($data, $request->has('remember'))) {
             $fallback = route('user.show', [Auth::user()]);
