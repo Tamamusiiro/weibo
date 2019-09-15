@@ -3,10 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\User;
+use Auth;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth', [
+            'except' => ['create', 'store', 'show', 'index']
+        ]);
+        $this->middleware('guest', [
+            'only' => ['create', 'store']
+        ]);
+    }
     /**
      * Display a listing of the resource.
      *
@@ -14,7 +24,8 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
+        $users = User::paginate(10);
+        return view('user.index', compact('users'));
     }
 
     /**
@@ -42,8 +53,9 @@ class UserController extends Controller
         ]);
         $data['password'] = bcrypt($data['password']);
         $user = User::create($data);
+        Auth::login($user);
         session()->flash('success', '欢迎，您将在这里开启一段新的旅程~');
-        return redirect()->route('user.show', [$user]);
+        return redirect()->route('user.show', $user);
     }
 
     /**
@@ -65,7 +77,8 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        //
+        $this->authorize('update', $user);
+        return view('user.edit', compact('user'));
     }
 
     /**
@@ -77,7 +90,19 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        //
+        $this->authorize('update', $user);
+        $this->validate($request, [
+            'name' => 'required|min:3|max:13',
+            'password' => 'nullable|min:3|max:13|confirmed'
+        ]);
+        $user->name = $request->name;
+        if ($request->password) {
+            $user->password = bcrypt($request->password);
+        }
+        $user->save();
+
+        session()->flash('success', '个人资料更新成功！');
+        return redirect()->route('user.show', [$user]);
     }
 
     /**
@@ -88,6 +113,9 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        //
+        $this->authorize('delete', $user);
+        $user->delete();
+        session()->flash('success', '删除成功');
+        return back();
     }
 }

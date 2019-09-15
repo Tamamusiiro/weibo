@@ -19,9 +19,10 @@ class SessionController extends Controller
             'password' => 'required|min:3|max:13'
         ]);
         if (Auth::attempt($data, $request->has('remember'))) {
-            return redirect()->route('user.show', [Auth::user()]);
+            $fallback = route('user.show', [Auth::user()]);
+            return redirect()->intended($fallback);
         } else {
-            session('danger', '登陆失败，请检查邮箱或密码输入是否有误');
+            session()->flash('danger', '登陆失败，请检查邮箱或密码输入是否有误');
             return back()->withInput();
         }
     }
