@@ -19,8 +19,15 @@ class SessionController extends Controller
             'password' => 'required|min:8|max:16'
         ]);
         if (Auth::attempt($data, $request->has('remember'))) {
-            $fallback = route('user.show', [Auth::user()]);
-            return redirect()->intended($fallback);
+            if (Auth::user()->activated) {
+                session()->flash('success', '欢迎回来！');
+                $fallback = route('user.show', [Auth::user()]);
+                return redirect()->intended($fallback);
+            } else {
+                Auth::logout();
+                session()->flash('warning', '你的账号未激活，请检查邮箱中的注册邮件进行激活。');
+                return redirect('/');
+            }
         } else {
             session()->flash('danger', '登陆失败，请检查邮箱或密码输入是否有误');
             return back()->withInput();

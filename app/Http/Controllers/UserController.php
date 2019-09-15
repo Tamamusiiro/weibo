@@ -68,7 +68,8 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return view('user.show', compact('user'));
+        $statuses = $user->feed()->paginate(10);
+        return view('user.show', compact('user', 'statuses'));
     }
 
     /**
