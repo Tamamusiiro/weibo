@@ -68,7 +68,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        $statuses = $user->feed()->paginate(10);
+        $statuses = $user->statuses()->paginate(10);
         return view('user.show', compact('user', 'statuses'));
     }
 
@@ -133,5 +133,31 @@ class UserController extends Controller
         Auth::login($user);
         session()->flash('success', '恭喜你，激活成功！');
         return redirect()->route('user.show', $user);
+    }
+
+    public function followers(User $user)
+    {
+        $users = $user->followers()->paginate(30);
+        $title = "{$user->name}的粉丝";
+        return view('user.show_follow', compact(['users', 'title']));
+    }
+
+    public function followings(User $user)
+    {
+        $users = $user->followings()->paginate(30);
+        $title = "{$user->name}关注的人";
+        return view('user.show_follow', compact(['users', 'title']));
+    }
+
+    public function followToggle(User $user)
+    {
+        $this->authorize('follow', $user);
+        Auth::user()->followToggle($user->id);
+        return back();
+    }
+
+    public function isFollowing(User $user)
+    {
+        return Auth::user()->isFollowing($user->id);
     }
 }

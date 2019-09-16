@@ -29,3 +29,7 @@ Route::get('password/reset/{token}', 'Auth\ResetPasswordController@showResetForm
 Route::post('password/reset', 'Auth\ResetPasswordController@reset')->name('password.update');
 
 Route::resource('status', 'StatusController');
+
+Route::get('user/{user}/followers', 'UserController@followers')->name('user.followers');
+Route::get('user/{user}/followings', 'UserController@followings')->name('user.followings');
+Route::post('user/follow_toggle/{user}', 'UserController@followToggle')->name('user.follow_toggle');
