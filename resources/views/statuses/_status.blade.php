@@ -7,7 +7,7 @@
     {{ $status->content }}
   </div>
   @can('delete', $status)
-    <form action="{{ route('status.destroy', $status->id) }}" method="POST" onsubmit="confirm('您确定要删除该条微博吗？')">
+    <form action="{{ route('status.destroy', $status->id) }}" method="POST" onsubmit="return confirm('您确定要删除该条微博吗？')">
       @csrf
       @method('DELETE')
       <button type="submit" class="btn btn-sm btn-danger">删除</button>
